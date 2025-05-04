@@ -1,6 +1,6 @@
 # Course Management
 
-This project demonstrates one way to implement a software system using Domain-Driven Design (DDD) and Event Sourcing principles with the help of [Marten](https://martendb.io/) as the event store. The architecture follows the Onion Architecture pattern to promote separation of concerns and maintainability.
+This project demonstrates one way to implement a software system using Domain-Driven Design (DDD) and Event Sourcing principles with the help of [Marten](https://martendb.io/) as the event store. The architecture follows the Onion Architecture pattern to promote separation of concerns and maintainability. This project uses Aspire to simplify local development and comes with a simple Blazor frontend for demonstration purposes.
 
 ## Disclaimer
 
