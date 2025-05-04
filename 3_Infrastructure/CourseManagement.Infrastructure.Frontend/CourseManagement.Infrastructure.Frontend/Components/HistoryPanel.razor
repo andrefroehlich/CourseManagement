@@ -1,0 +1,14 @@
+@using CourseManagement.Application.ReadModels
+@implements IDialogContentComponent<CourseHistoryReadModel>
+
+<p>
+    @foreach (var item in Content.History)
+    {
+        <p><em>@item.Date:</em> @item.Event</p>       
+    }
+</p>
+
+@code {
+    [Parameter]
+    public CourseHistoryReadModel Content { get; set; }
+}

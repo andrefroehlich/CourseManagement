@@ -1,0 +1,99 @@
+@page "/courses/register"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using CourseManagement.Application.Commands
+@inject CourseManagement.Infrastructure.Frontend.Clients.CommandApiClient CommandApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Register Course</PageTitle>
+
+<h1>Register Course</h1>
+
+<EditForm Model="formModel" OnValidSubmit="HandleValidSubmit" FormName="registerCourseForm" novalidate>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <FluentStack Orientation="Orientation.Vertical">
+        <div>
+            <div>
+                <FluentTextField Name="id" @bind-Value="formModel.Id" Label="Course Id" style="width: 350px;">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.NumberRow())" OnClick="RegenGuid" Slot="end"/>
+                </FluentTextField>
+                
+            </div>
+            <FluentValidationMessage for="@(() => formModel.Id)"/>
+        </div>
+        <div>
+            <FluentTextField Name="name" @bind-Value="formModel.Name" Label="Course Name" />
+            <FluentValidationMessage for="@(() => formModel.Name)"/>
+        </div>
+        <div>
+            <FluentTextField Name="teacherName" @bind-Value="formModel.TeacherName" Label="Teacher Name" />
+            <FluentValidationMessage for="@(() => formModel.TeacherName)"/>
+        </div>
+        <div>
+            <FluentDatePicker Name="date" @bind-Value="formModel.CourseDate" View="CalendarViews.Days" Label="Course Date" />
+        </div>
+        <div>
+            <FluentTextField Name="room" @bind-Value="formModel.Room" Label="Room" />
+            <FluentValidationMessage for="@(() => formModel.Room)" />
+        </div>
+        <div>
+            <FluentNumberField Name="maxParticipants" @bind-Value="formModel.MaxParticipants" Label="Max Participants" Min="1" />
+            <FluentValidationMessage for="@(() => formModel.MaxParticipants)" />
+        </div>
+    </FluentStack>
+
+    <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Register</FluentButton>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div>@message</div>
+}
+
+@code {
+    private CourseFormModel formModel = new();
+    private string message = string.Empty;
+    
+    private async Task HandleValidSubmit()
+    {
+        var command = new RegisterCourseCommand(
+            CourseId: Guid.Parse(formModel.Id),
+            Name: formModel.Name,
+            TeacherName: formModel.TeacherName,
+            CourseDate: formModel.CourseDate ?? DateTime.Now,
+            Room: formModel.Room,
+            MaxParticipants: formModel.MaxParticipants);
+        try
+        {
+            await CommandApiClient.RegisterCourseAsync(command);
+            Navigation.NavigateTo("/courses");
+        }
+        catch (Exception ex)
+        {
+            message = $"Error registering course: {ex.Message}";
+        }
+    }
+
+    private class CourseFormModel
+    {
+        [Required]
+        public string Id { get; set; } = Guid.CreateVersion7().ToString();
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        [Required]
+        public string TeacherName { get; set; } = string.Empty;
+        [Required]
+        public DateTime? CourseDate { get; set; } = DateTime.Now;
+        [Required]
+        public string Room { get; set; } = string.Empty;
+        [Required]
+        public int MaxParticipants { get; set; } = 5;
+    }
+
+    private void RegenGuid()
+    {
+        formModel.Id = Guid.CreateVersion7().ToString();
+    }
+}

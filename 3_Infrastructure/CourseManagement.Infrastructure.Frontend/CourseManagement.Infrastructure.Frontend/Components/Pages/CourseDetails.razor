@@ -1,0 +1,173 @@
+@page "/courses/{id}"
+@using CourseManagement.Application.Commands
+@using CourseManagement.Application.ReadModels
+@using CourseManagement.Infrastructure.Frontend.Clients
+@rendermode InteractiveServer
+@inject QueryApiClient QueryApi
+@inject CommandApiClient CommandApi
+@inject IDialogService DialogService
+
+<PageTitle>Course Details (@Id)</PageTitle>
+
+@if (course == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <h1>@course.Name</h1>
+
+    <FluentGrid>
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <h3>Overview</h3>
+                <FluentGrid>
+                    <FluentGridItem xs="12" md="4">
+                        Course Id
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.Id</FluentLabel>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="4">
+                        Course Name
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.Name</FluentLabel>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="4">
+                        Teacher Namme
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.TeacherName</FluentLabel>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="4">
+                        Course Date
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.CourseDate.ToString("dd.MM.yyyy")</FluentLabel>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="4">
+                        Room
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.Room</FluentLabel>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="4">
+                        Max Participants
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" md="8">
+                        <FluentLabel Color="Color.Accent">@course.MaxParticipants</FluentLabel>
+                    </FluentGridItem>
+                </FluentGrid>
+            </FluentCard>
+        </FluentGridItem>
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <h3>Actions</h3>
+                <FluentStack Orientation="Orientation.Vertical">
+                    <FluentButton
+                        Appearance="Appearance.Accent"
+                        IconStart="@(new Icons.Regular.Size16.PersonAdd())"
+                        OnClick="RegisterParticipant">
+                        Register Participant
+                    </FluentButton>
+                    <FluentButton
+                        Appearance="Appearance.Accent"
+                        IconStart="@(new Icons.Regular.Size16.History())"
+                        OnClick="()=>ShowHistory(course.Id)">
+                        Show History
+                    </FluentButton>
+                </FluentStack>
+            </FluentCard>
+        </FluentGridItem>
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <h3>Participants</h3>
+                @if (!course.Participants.Any())
+                {
+                    <p>No participants registered yet.</p>
+                }
+                @foreach (var participant in course.Participants)
+                {
+                    <div style="display: flex; align-items: center;">
+                        @participant
+                        <FluentButton IconEnd="@(new Icons.Regular.Size16.PersonDelete())"
+                                      Title="Withdraw"
+                                      Appearance="Appearance.Lightweight"
+                                      OnClick="@(() => Withdraw(participant))"/>
+                    </div>
+                }
+            </FluentCard>
+        </FluentGridItem>
+        <FluentGridItem xs="12" md="6">
+            <FluentCard>
+                <h3>Waiting List</h3>
+                @if (!course.WaitingList.Any())
+                {
+                    <p>No participants in waiting list.</p>
+                }
+                @foreach (var participant in course.WaitingList)
+                {
+                    <div style="display: flex; align-items: center;">
+                        @participant
+                        <FluentButton IconEnd="@(new Icons.Regular.Size16.PersonDelete())"
+                                      Title="Withdraw"
+                                      Appearance="Appearance.Lightweight"
+                                      OnClick="@(() => Withdraw(participant))"/>
+                    </div>
+                }
+            </FluentCard>
+        </FluentGridItem>
+    </FluentGrid>
+}
+
+@code {
+    [Parameter] public string? Id { get; set; }
+
+    private CourseDetailReadModel? course;
+
+    protected override async Task OnInitializedAsync()
+    {
+        course = await QueryApi.GetCourseByIdAsync(Guid.Parse(Id));
+    }
+
+    private async Task Withdraw(string name)
+    {
+        await CommandApi.WithdrawParticipantAsync(new WithdrawParticipantCommand(course!.Id, name));
+        course = await QueryApi.GetCourseByIdAsync(course.Id);
+    }
+
+    private async Task RegisterParticipant()
+    {
+        var participantName = string.Empty;
+        var dialogInstance = await DialogService.ShowDialogAsync(
+            @<div><FluentTextField @bind-Value=participantName Label="Name:"/></div>,
+            new DialogParameters { Title = "Register Participant" });
+
+        var result = await dialogInstance.Result;
+        
+        if (!result.Cancelled)
+        {
+            await CommandApi.RegisterParticipantAsync(new RegisterParticipantCommand(course.Id, participantName));
+            course = await QueryApi.GetCourseByIdAsync(course.Id);
+        }
+    }
+
+    private async Task ShowHistory(Guid courseId)
+    {
+        var courseHistory = await QueryApi.GetCourseHistoryByIdAsync(courseId);
+
+        if (courseHistory == null) return;
+
+        var parameters = new DialogParameters<CourseHistoryReadModel>
+        {
+            Content = courseHistory,
+            Alignment = HorizontalAlignment.Right,
+            Title = "History"
+        };
+        var dialogInstance = await DialogService.ShowPanelAsync<HistoryPanel>(courseHistory, parameters);
+        DialogResult result = await dialogInstance.Result;
+    }
+}

@@ -1,0 +1,61 @@
+@page "/courses"
+@rendermode InteractiveServer
+@using CourseManagement.Application.ReadModels
+@using CourseManagement.Infrastructure.Frontend.Clients
+@inject NavigationManager Navigation
+
+@inject QueryApiClient QueryApi
+
+<PageTitle>Courses</PageTitle>
+
+<h1>Courses</h1>
+
+<FluentStack>
+    <FluentButton IconStart="@(new Icons.Regular.Size16.Add())"
+                  Appearance="Appearance.Accent"
+                  OnClick="@(() => Navigation.NavigateTo("/courses/register"))">
+        Register Course
+    </FluentButton>
+</FluentStack>
+
+@if (courses == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+} else if (!courses.Any())
+{
+    <p>No courses registered yet.</p>
+}
+else
+{
+    <FluentPaginator State="@pagination" SummaryTemplate="@template" />
+
+    <FluentDataGrid Id="coursegrid" RowSize="DataGridRowSize.Medium" Items="@courses" Pagination="@pagination" GridTemplateColumns="1fr 1fr 1fr 1fr" TGridItem="CourseOverviewSelfProjectedReadModel" AutoFit="true">
+        <PropertyColumn Title="Id" Property="@(c => c!.Id)" Sortable="true" Align="Align.Start"></PropertyColumn>
+        <PropertyColumn Title="Name" Property="@(c => c!.Name)" Sortable="true" Align="Align.Start"></PropertyColumn>
+        <PropertyColumn Title="Teacher" Property="@(c => c!.TeacherName)" Sortable="true" Align="Align.Start"></PropertyColumn>
+        <PropertyColumn Title="Date" Property="@(c => c!.CourseDate)" Format="dd.MM.yyyy" Sortable="true" Align="Align.Start"></PropertyColumn>
+        <PropertyColumn Title="Room" Property="@(c => c!.Room)" Sortable="true" Align="Align.Start"></PropertyColumn>
+        <PropertyColumn Title="Max Participants" Property="@(c => c!.MaxParticipants)" Sortable="true" Align="Align.End"></PropertyColumn>
+        <TemplateColumn Title="Actions">
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Document())"
+                          Title="Details"
+                          Appearance="Appearance.Lightweight"
+                          OnClick="@(() => Navigation.NavigateTo($"/courses/{(context!.Id)}"))" />
+        </TemplateColumn>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@pagination" SummaryTemplate="@template" />
+}
+
+@code {
+    PaginationState pagination = new() { ItemsPerPage = 10 };
+    private RenderFragment template = @<span />;
+    private IQueryable<CourseOverviewSelfProjectedReadModel>? courses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        courses = await QueryApi.GetAllCoursesAsync();
+    }
+}

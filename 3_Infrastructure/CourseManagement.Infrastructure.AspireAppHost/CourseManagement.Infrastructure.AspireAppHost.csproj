@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0"/>
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsAspireHost>true</IsAspireHost>
+        <UserSecretsId>cf2a0ecd-61b5-452c-b747-736887dbdcc0</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="9.2.1" />
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.2.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CourseManagement.Infrastructure.Frontend\CourseManagement.Infrastructure.Frontend\CourseManagement.Infrastructure.Frontend.csproj" />
+      <ProjectReference Include="..\CourseManagement.Infrastructure.CommandApi\CourseManagement.Infrastructure.CommandApi.csproj" />
+      <ProjectReference Include="..\CourseManagement.Infrastructure.QueryApi\CourseManagement.Infrastructure.QueryApi.csproj" />
+    </ItemGroup>
+
+</Project>
