@@ -56,6 +56,7 @@ public static class Extensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
+                metrics.AddMeter("Marten");
             })
             .WithTracing(tracing =>
             {
@@ -64,6 +65,7 @@ public static class Extensions
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
+                tracing.AddSource("Marten");
             });
 
         builder.AddOpenTelemetryExporters();
