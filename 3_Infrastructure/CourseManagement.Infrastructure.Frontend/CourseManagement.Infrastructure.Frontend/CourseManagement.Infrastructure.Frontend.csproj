@@ -9,8 +9,8 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\2_Application\CourseManagement.Application\CourseManagement.Application.csproj" />
         <ProjectReference Include="..\..\..\3_Infrastructure\CourseManagement.Infrastructure.AspireServiceDefaults\CourseManagement.Infrastructure.AspireServiceDefaults.csproj" />
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.8"/>
-        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.8"/>
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.11.9" />
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.11.9" />
     </ItemGroup>
     
 </Project>
